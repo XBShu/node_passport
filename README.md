@@ -20,6 +20,7 @@
 
 ## Code
 ### To create a layout 
+node_passport/views/layout.ejs
 ```javascript
 <!DOCTYPE html>
 <html lang="en">
