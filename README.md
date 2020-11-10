@@ -20,8 +20,7 @@
 
 ## Code
 ### To create a layout 
-node_passport/views/layout.ejs
-The views folder will contain all the views as well as the layout (seen below). The content of the views will be inserted within the <%- body %> tags.
+The views folder will contain all the views as well as the layout.ejs (seen below). The content of the views will be inserted within the <%- body %> tags.
 ```javascript
 <!DOCTYPE html>
 <html lang="en">
@@ -46,7 +45,7 @@ The views folder will contain all the views as well as the layout (seen below). 
 </html>
 ```
 
-Below is views/dashboard.ejs as an example of a view that would be used by layout.ejs when res.render('dashboard') is called
+Below is dashboard.ejs as an example of a view that would be inserted into layout.ejs when res.render('dashboard') is called
 ```javascript
 <h1 class="mt-4">Menu de usuario</h1>
 <p class="lead mb-3"> Bienvenido, <%= name %></p>
