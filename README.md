@@ -78,3 +78,114 @@ router.get('/dashboard', ensureAuthenticated, (req, res) => {
 })
 module.exports = router;
 ```
+### Passport
+Passport.js was initialized in the config file
+
+
+```javascript
+const LocalStrategy = require('passport-local').Strategy;
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const passport = require('passport');
+
+const User = require('../models/User');
+const { deleteOne } = require('../models/User');
+
+module.exports = function(passport) {
+    passport.use(new LocalStrategy({usernameField: 'email'}, (email, password, done) => {
+        if(email == "") return done(null, false, {message: 'Introduzca su email'});
+        //Find user by email within the User collection in the database
+        User.findOne({email: email})
+            .then(user =>{
+
+                //If user is not found return a message that will be displayed as a flash message
+                if(!user) return done(null, false, {message: 'Email o contraseña no valido'});
+
+
+                //The password was hashed when user registered, so use brcypt compare to compare the unhashed input with the hashed password found in database
+                bcrypt.compare(password, user.password, (err, isMatch) => {
+                    if(err) throw err;
+
+                    if(isMatch) {
+                        return done(null, user);
+                    } else {
+
+                        //Another flash message if password is not a match
+                        return done(null, false, {message: 'Email o contraseña no valido'});
+                    }
+                })
+            })
+            .catch(err => console.log(err));
+    }))
+}
+
+passport.serializeUser((user, done) => {
+    done(null, user.id);
+  });
+  
+  passport.deserializeUser((id, done) => {
+    User.findById(id, (err, user) => {
+      done(err, user);
+    });
+  });
+```
+
+### Flash messages
+The application displays a flash message if the user had succesfuly signed up. In order to implement these we must also implement express sessions
+
+```javascript
+//Express session 
+app.use(session({
+    secret: 'secret',
+    resave: true,
+    saveUninitialized: true,
+    //cookie : {secure: true} disabled because otherwise flash message won't appear
+}))
+
+//Passport middleware (must be put after the express session)
+app.use(passport.initialize());
+app.use(passport.session());
+
+//Connect flash
+app.use(flash());
+
+```
+
+Then we can declare global variables 
+```javascript
+//Global vars
+app.use((req, res, next) => {
+    res.locals.success_msg = req.flash('success_msg');
+    res.locals.error_msg = req.flash('error_msg');
+    res.locals.error = req.flash('error');
+    next();
+})
+```
+
+The example below is executed when a new user is registered
+```javascript
+newUser.save()
+    .then(user => {
+        //success_msg is assigned the following message
+        req.flash('success_msg', 'Su solicitud ha sido enviada. Le enviaremos un correo por email al darle de alta');
+        res.redirect('/users/login');
+    }).catch(err => console.log(err));
+
+```
+
+If you want to display the message somewhere, you must use ejs somewhere in the page:
+```javascript
+        <%- include('partials/messages.ejs') %>
+```
+Then in the partials/messages.ejs file:
+```javascript
+<% if(success_msg.length > 0) { %>
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <%= success_msg %>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+<% } %>
+```
+check if success_msg is not an empty string. It should not be, because we assigned a message to it when the user was registered. And display.
