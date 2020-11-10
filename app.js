@@ -9,8 +9,10 @@ const app = express();
 
 //Passport config
 require('./config/passport')(passport);
+
 //DB conofig
 const db = require('./config/keys').MongoURI;
+
 //Connect to Mongo
 mongoose.connect(db, {useUnifiedTopology: true, useNewUrlParser: true})
     .then(() => console.log(`MongoDB Connected...`))

@@ -51,3 +51,30 @@ Below is dashboard.ejs as an example of a view that would be inserted into layou
 <p class="lead mb-3"> Bienvenido, <%= name %></p>
 <a href="users/logout" class="btn btn-secondary">Cerrar sesión</a>
 ```
+
+### Using the router
+Below is the code that would specify the routes. This should be in app.js (or whatever you name your entry point)
+```javascript
+//Routes
+app.use('/', require('./routes/index'));
+app.use('/users', require('./routes/users'));
+```
+Here, the app uses '/' and '/users' as two of the route. Notice that they require certain routes from the routes folder..
+
+The code below is from index.js within the routes folder. Here we see that it handles get requests for the '/' and '/dashboard' paths
+```javascript
+const express = require('express');
+const router = express.Router();
+const {ensureAuthenticated} = require('../config/auth');
+
+router.get('/',(req, res) => {
+    res.render('welcome');
+})
+
+router.get('/dashboard', ensureAuthenticated, (req, res) => {
+    res.render('dashboard', {
+        name: req.user.name,
+    });
+})
+module.exports = router;
+```
